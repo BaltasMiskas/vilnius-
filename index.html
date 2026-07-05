@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baltas Miškas | Dienos Orai ir Stiliaus Gidas</title>
+    <title>Baltas Miškas | Aprangos rekomendacijos pagal orus</title>
     <style>
         :root {
             --brand-color: #a16207;
-            --bg-light: #fbfbfb;
+            --bg-light: #ffffff; /* Visiškai baltas fonas */
             --text-dark: #1c1c1c;
             --text-muted: #666666;
             --border-light: #eaeaea;
@@ -26,25 +26,30 @@
             max-width: 800px;
             margin: 0 auto;
             background: #ffffff;
-            padding: 40px;
-            border-radius: 4px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            padding: 40px 0; /* Švarus minimalistinis stilius be papildomų rėmų */
         }
 
         h2 {
             font-weight: 300;
-            font-size: 1.6rem;
+            font-size: 1.8rem;
             letter-spacing: 1px;
             text-transform: uppercase;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 40px;
         }
 
         .setup-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         @media (max-width: 600px) {
@@ -81,8 +86,37 @@
             border-color: var(--text-dark);
         }
 
+        .submit-btn-container {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .submit-btn {
+            background: var(--text-dark);
+            color: #ffffff;
+            border: 1px solid var(--text-dark);
+            padding: 14px 28px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 2px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .submit-btn:hover {
+            background: transparent;
+            color: var(--text-dark);
+        }
+
+        .results-wrapper {
+            display: none; /* Paslėpta iki paspaudimo */
+        }
+
         .weather-info-box {
-            background-color: var(--bg-light);
+            background-color: #fbfbfb;
             border: 1px solid var(--border-light);
             padding: 20px;
             border-radius: 2px;
@@ -178,7 +212,8 @@
 <body>
 
 <div class="container">
-    <h2>Dienos orų ir stiliaus gidas</h2>
+    <h2>Aprangos rekomendacijos pagal orus</h2>
+    <div class="subtitle">Pasirinkite dieną ir progą idealiam lietuvių dizainerių deriniui atrasti</div>
 
     <div class="setup-section">
         <!-- DATOS PASIRINKIMAS -->
@@ -199,20 +234,26 @@
         </div>
     </div>
 
-    <!-- ORŲ PROGNOZĖS PANELĖ -->
-    <div class="weather-info-box">
-        <label>Prognozuojama tos dienos temperatūra</label>
-        <div class="predicted-temp" id="temp-display">--°C</div>
-        <div id="weather-desc-text" style="font-size: 0.9rem; color: var(--text-muted);">Pasirinkite datą orų analizei</div>
+    <!-- STRATEGINIS VEIKSMO MYGTUKAS -->
+    <div class="submit-btn-container">
+        <button type="button" class="submit-btn" id="filter-submit-btn">Atrinkti derinius</button>
     </div>
 
-    <div class="divider"></div>
+    <!-- REZULTATŲ ZONA (PASLĖPTA IKI PASPAUDIMO) -->
+    <div class="results-wrapper" id="results-area">
+        <div class="weather-info-box">
+            <label>Prognozuojama tos dienos temperatūra</label>
+            <div class="predicted-temp" id="temp-display">--°C</div>
+            <div id="weather-desc-text" style="font-size: 0.9rem; color: var(--text-muted);"></div>
+        </div>
 
-    <!-- REKOMENDACIJOS -->
-    <div>
-        <div class="results-headline">Rekomenduojami pasirinkimai jūsų įvaizdžiui:</div>
-        <div class="recommendations-grid" id="recommendations-container">
-            <!-- Užpildoma iš JS -->
+        <div class="divider"></div>
+
+        <div>
+            <div class="results-headline">Rekomenduojami pasirinkimai jūsų įvaizdžiui:</div>
+            <div class="recommendations-grid" id="recommendations-container">
+                <!-- Užpildoma iš JS -->
+            </div>
         </div>
     </div>
 </div>
@@ -277,42 +318,38 @@
         }
     };
 
-    // Nustatome šiandienos datą kaip numatytąją
+    // Nustatome šiandienos datą kaip pradinę reikšmę
     const datePicker = document.getElementById('date-picker');
     const today = new Date().toISOString().split('T')[0];
     datePicker.value = today;
 
-    function processWeatherAndStyle() {
+    function generateStyles() {
         const selectedDate = new Date(datePicker.value);
-        const month = selectedDate.getMonth(); // 0 = sausis, 1 = vasaris...
+        const month = selectedDate.getMonth();
         
-        let temperature = 20; // Numatytoji vidutinė temp
+        let temperature = 20;
         let weatherKey = 'silta';
         let statusText = '';
 
-        // Supaprastintas temperatūros prognozavimo algoritmas pagal mėnesius
-        if (month >= 5 && month <= 7) { // Vasaros mėnesiai (Birželis - Rugpjūtis)
+        if (month >= 5 && month <= 7) { 
             temperature = 26;
             weatherKey = 'karsta';
             statusText = 'Prognozuojama giedra ir karšta vasaros diena.';
-        } else if (month === 4 || month === 8) { // Gegužė ir rugsėjis
+        } else if (month === 4 || month === 8) { 
             temperature = 19;
             weatherKey = 'silta';
             statusText = 'Prognozuojami malonūs, vidutiniškai šilti orai.';
-        } else { // Vėsesnis sezonas
+        } else { 
             temperature = 12;
             weatherKey = 'vejuota';
             statusText = 'Prognozuojama vėsi, permaininga ar vėjuota diena.';
         }
 
-        // Atvaizduojame temperatūrą
+        // Užpildome duomenis
         document.getElementById('temp-display').innerText = `${temperature}°C`;
         document.getElementById('weather-desc-text').innerText = statusText;
 
-        // Gauname pasirinktą progą
         const currentOccasion = document.getElementById('occasion-select').value;
-
-        // Atnaujiname prekių korteles
         const container = document.getElementById('recommendations-container');
         container.innerHTML = '';
         
@@ -331,14 +368,13 @@
             `;
             container.appendChild(card);
         });
+
+        // Parodome rezultatų zoną
+        document.getElementById('results-area').style.display = 'block';
     }
 
-    // Klausomės pakeitimų
-    datePicker.addEventListener('change', processWeatherAndStyle);
-    document.getElementById('occasion-select').addEventListener('change', processWeatherAndStyle);
-
-    // Paleidžiame pirmą kartą su šiandienos data
-    processWeatherAndStyle();
+    // Rezultatai generuojami TIK paspaudus mygtuką
+    document.getElementById('filter-submit-btn').addEventListener('click', generateStyles);
 </script>
 
 </body>
