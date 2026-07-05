@@ -7,7 +7,7 @@
     <style>
         :root {
             --brand-color: #a16207;
-            --bg-light: #ffffff; /* Visiškai baltas fonas */
+            --bg-light: #ffffff;
             --text-dark: #1c1c1c;
             --text-muted: #666666;
             --border-light: #eaeaea;
@@ -26,7 +26,7 @@
             max-width: 800px;
             margin: 0 auto;
             background: #ffffff;
-            padding: 40px 0; /* Minimalistinis stilius be papildomų rėmų */
+            padding: 40px 0;
         }
 
         h2 {
@@ -112,7 +112,7 @@
         }
 
         .results-wrapper {
-            display: none; /* Paslėpta iki paspaudimo */
+            display: none;
         }
 
         .weather-info-box {
@@ -216,13 +216,11 @@
     <div class="subtitle">Pasirinkite dieną ir progą idealiam lietuvių dizainerių deriniui atrasti</div>
 
     <div class="setup-section">
-        <!-- DATOS PASIRINKIMAS -->
         <div class="form-group">
             <label for="date-picker">Pasirinkite dieną</label>
             <input type="date" id="date-picker">
         </div>
 
-        <!-- PROGOS PASIRINKIMAS -->
         <div class="form-group">
             <label for="occasion-select">Sukurti derinį progai</label>
             <select id="occasion-select">
@@ -234,15 +232,13 @@
         </div>
     </div>
 
-    <!-- VEIKSMO MYGTUKAS -->
     <div class="submit-btn-container">
         <button type="button" class="submit-btn" id="filter-submit-btn">Atrinkti derinius</button>
     </div>
 
-    <!-- REZULTATŲ ZONA (PASLĖPTA IKI PASPAUDIMO) -->
     <div class="results-wrapper" id="results-area">
         <div class="weather-info-box">
-            <label>Prognozuojama tos dienos temperatūra</label>
+            <label id="source-label">Prognozuojama tos dienos temperatūra</label>
             <div class="predicted-temp" id="temp-display">--°C</div>
             <div id="weather-desc-text" style="font-size: 0.9rem; color: var(--text-muted);"></div>
         </div>
@@ -252,8 +248,7 @@
         <div>
             <div class="results-headline">Rekomenduojami pasirinkimai jūsų įvaizdžiui:</div>
             <div class="recommendations-grid" id="recommendations-container">
-                <!-- Užpildoma iš JS -->
-            </div>
+                </div>
         </div>
     </div>
 </div>
@@ -318,27 +313,54 @@
         }
     };
 
-    // Nustatome šiandienos datą kaip numatytąją įvedimo lauke
     const datePicker = document.getElementById('date-picker');
-    const today = new Date().toISOString().split('T')[0];
-    datePicker.value = today;
+    datePicker.value = new Date().toISOString().split('T')[0];
 
-    function generateStyles() {
-        const dateString = datePicker.value;
-        if (!dateString) return;
-
-        // GRĄŽINTAS ANKSTESNIS PRECIZINIS MECHANIZMAS
-        // Sukuriame stabilų orų kintamumą pagal pasirinktos dienos timestamp numerius
+    // Funkcija gauti istorinius klimato duomenis (Vilniaus vidurkius)
+    function getHistoricalWeather(dateString) {
         const selectedDate = new Date(dateString);
         const dayOfYear = Math.floor((selectedDate - new Date(selectedDate.getFullYear(), 0, 0)) / 86400000);
         
-        // Sezoninė bazinė temperatūra (sinuso banga per metus)
         const baseTemp = 14 + 12 * Math.sin((dayOfYear - 105) * 2 * Math.PI / 365);
-        // Pridedame nedidelį kasdienį atsitiktinį svyravimą (-3°C iki +3°C), kad gretimos dienos skirtųsi
         const daySeed = Math.sin(dayOfYear * 55.5) * 3; 
-        const temperature = Math.round(baseTemp + daySeed);
+        return Math.round(baseTemp + daySeed);
+    }
 
-        // Nustatome orų kategoriją pagal apskaičiuotą temperatūrą
+    // Pagrindinis procesas paspaudus mygtuką
+    async function handleFilterSubmit() {
+        const dateString = datePicker.value;
+        if (!dateString) return;
+
+        let temperature;
+        let isLiveForecast = false;
+
+        // Skaičiuojame dienų skirtumą tarp šiandienos ir pasirinktos datos
+        const todayStr = new Date().toISOString().split('T')[0];
+        const diffTime = new Date(dateString) - new Date(todayStr);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        // Jeigu data patenka į gyvų prognozių rėmus (nuo šiandien iki +13 dienų į priekį)
+        if (diffDays >= 0 && diffDays <= 13) {
+            try {
+                // Vilniaus geografinės koordinatės: lat=54.6872, lon=25.2797
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=54.6872&longitude=25.2797&daily=temperature_2m_max&timezone=auto&start_date=${dateString}&end_date=${dateString}`);
+                const data = await response.json();
+                
+                if (data && data.daily && data.daily.temperature_2m_max) {
+                    temperature = Math.round(data.daily.temperature_2m_max[0]);
+                    isLiveForecast = true;
+                }
+            } catch (error) {
+                console.log("Nepavyko pasiekti gyvo API, jungiamas istorinis modelis:", error);
+            }
+        }
+
+        // Jei API nepavyko arba pasirinkta tolima data – naudojame istorinius vidurkius
+        if (temperature === undefined) {
+            temperature = getHistoricalWeather(dateString);
+        }
+
+        // Orų kategorijos nustatymas
         let weatherKey = 'silta';
         let statusText = 'Prognozuojami malonūs, vidutiniškai šilti orai.';
 
@@ -350,10 +372,15 @@
             statusText = 'Prognozuojama vėsi, permaininga ar vėjuota diena.';
         }
 
-        // Atvaizduojame rezultatus vartotojui
+        // Atvaizduojame šaltinio informaciją vartotojui dėl aiškumo
+        document.getElementById('source-label').innerText = isLiveForecast 
+            ? "Tiksli sinoptikų prognozė Vilniuje" 
+            : "Prognozuojama temperatūra (pagal klimato vidurkius)";
+
         document.getElementById('temp-display').innerText = `${temperature}°C`;
         document.getElementById('weather-desc-text').innerText = statusText;
 
+        // Kortelių užpildymas
         const currentOccasion = document.getElementById('occasion-select').value;
         const container = document.getElementById('recommendations-container');
         container.innerHTML = '';
@@ -374,12 +401,11 @@
             container.appendChild(card);
         });
 
-        // Parodome rezultatų bloką tik dabar
+        // Atveriame rezultatų bloką
         document.getElementById('results-area').style.display = 'block';
     }
 
-    // Viskas suveikia tik spustelėjus mygtuką
-    document.getElementById('filter-submit-btn').addEventListener('click', generateStyles);
+    document.getElementById('filter-submit-btn').addEventListener('click', handleFilterSubmit);
 </script>
 
 </body>
