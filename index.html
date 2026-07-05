@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baltas Miškas | Asmeninis Stiliaus Gidas</title>
+    <title>Baltas Miškas | Dienos Orai ir Stiliaus Gidas</title>
     <style>
         :root {
             --brand-color: #a16207;
@@ -23,7 +23,7 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 800px;
             margin: 0 auto;
             background: #ffffff;
             padding: 40px;
@@ -33,54 +33,68 @@
 
         h2 {
             font-weight: 300;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             letter-spacing: 1px;
             text-transform: uppercase;
             text-align: center;
             margin-bottom: 30px;
-            color: var(--text-dark);
         }
 
-        .filter-section {
-            margin-bottom: 25px;
+        .setup-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
-        .filter-label {
+        @media (max-width: 600px) {
+            .setup-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
             font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--text-muted);
-            margin-bottom: 10px;
-            display: block;
+            margin-bottom: 8px;
         }
 
-        .options-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-
-        .option-btn {
-            background: #ffffff;
+        input[type="date"], select {
+            padding: 12px;
             border: 1px solid var(--border-light);
-            padding: 14px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
             border-radius: 2px;
+            font-size: 1rem;
+            background: #fff;
             color: var(--text-dark);
+            outline: none;
+            transition: border-color 0.2s;
         }
 
-        .option-btn:hover {
+        input[type="date"]:focus, select:focus {
             border-color: var(--text-dark);
         }
 
-        .option-btn.active {
-            background: var(--text-dark);
-            color: #ffffff;
-            border-color: var(--text-dark);
+        .weather-info-box {
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-light);
+            padding: 20px;
+            border-radius: 2px;
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .predicted-temp {
+            font-size: 2rem;
+            font-weight: 300;
+            color: var(--brand-color);
+            margin: 5px 0;
         }
 
         .divider {
@@ -159,50 +173,53 @@
             background: var(--text-dark);
             color: #ffffff;
         }
-
-        @media (max-width: 600px) {
-            .options-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Asmeninis stiliaus gidas</h2>
+    <h2>Dienos orų ir stiliaus gidas</h2>
 
-    <div class="filter-section">
-        <span class="filter-label">1. Kokie orai už lango?</span>
-        <div class="options-grid" id="weather-options">
-            <div class="option-btn active" data-weather="karsta">Karšta vasara (25°C+)</div>
-            <div class="option-btn" data-weather="silta">Šilta / Gaivu (18-24°C)</div>
-            <div class="option-btn" data-weather="vejuota">Vėsu / Vėjuota</div>
+    <div class="setup-section">
+        <!-- DATOS PASIRINKIMAS -->
+        <div class="form-group">
+            <label for="date-picker">Pasirinkite dieną</label>
+            <input type="date" id="date-picker">
+        </div>
+
+        <!-- PROGOS PASIRINKIMAS -->
+        <div class="form-group">
+            <label for="occasion-select">Sukurti derinį progai</label>
+            <select id="occasion-select">
+                <option value="kasdienai">Kasdienai / Mieste</option>
+                <option value="sventei">Šventei / Vakarienei</option>
+                <option value="darbui">Darbui / Ofisui</option>
+                <option value="laisvalaikiui">Gamtai / Laisvalaikiui</option>
+            </select>
         </div>
     </div>
 
-    <div class="filter-section">
-        <span class="filter-label">2. Kokiai progai ieškote derinio?</span>
-        <div class="options-grid" id="occasion-options">
-            <div class="option-btn active" data-occasion="kasdienai">Kasdienai / Mieste</div>
-            <div class="option-btn" data-occasion="sventei">Šventei / Vakarienei</div>
-            <div class="option-btn" data-occasion="darbui">Darbui / Ofisui</div>
-            <div class="option-btn" data-occasion="laisvalaikiui">Gamtai / Laisvalaikiui</div>
-        </div>
+    <!-- ORŲ PROGNOZĖS PANELĖ -->
+    <div class="weather-info-box">
+        <label>Prognozuojama tos dienos temperatūra</label>
+        <div class="predicted-temp" id="temp-display">--°C</div>
+        <div id="weather-desc-text" style="font-size: 0.9rem; color: var(--text-muted);">Pasirinkite datą orų analizei</div>
     </div>
 
     <div class="divider"></div>
 
+    <!-- REKOMENDACIJOS -->
     <div>
-        <div class="results-headline" id="results-title">Rekomenduojami pasirinkimai jūsų dienai:</div>
+        <div class="results-headline">Rekomenduojami pasirinkimai jūsų įvaizdžiui:</div>
         <div class="recommendations-grid" id="recommendations-container">
-            </div>
+            <!-- Užpildoma iš JS -->
+        </div>
     </div>
 </div>
 
 <script>
     const baseUrl = 'https://www.baltasmiskas.lt';
-    
+
     const db = {
         karsta: {
             kasdienai: [
@@ -211,4 +228,118 @@
             ],
             sventei: [
                 { tag: "Elegancija", title: "Lietuvių dizainerių suknelės", desc: "Plazdančios, lengvos suknelės ypatingoms vasaros akimirkoms ir šventėms.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/lietuviu-dizaineriu-sukneles" },
-                { tag: "Akcentas", title: "Išskirtiniai papuošalai", desc: "Užbaikite šventinį įvaizdį rankų darbo auskarais ar kaklo papuo
+                { tag: "Akcentas", title: "Išskirtiniai papuošalai", desc: "Užbaikite šventinį įvaizdį rankų darbo auskarais ar kaklo papuošalu.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/papuosalai-jai" }
+            ],
+            darbui: [
+                { tag: "Stilius Ofise", title: "Lino laisvalaikio kostiumai", desc: "Struktūrizuoti, bet vėsūs lininiai kostiumėliai, tinkantys formalesniam vasaros įvaizdžiui.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/kostiumeliai/lininiai-laisvalaikio-kostiumai" },
+                { tag: "Klasika", title: "Elegantiškos palaidinės", desc: "Lengvos palaidinės be rankovių arba trumpomis rankovėmis po švarku.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/palaidines" }
+            ],
+            laisvalaikiui: [
+                { tag: "Komfortas", title: "Vasaros kombinezonai", desc: "Vieno drabužio magija – lengvi kombinezonai nerūpestingam poilsiui.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/kelnes/kombinezonai" },
+                { tag: "Prie Jūros", title: "Maudymosi kostiumėliai", desc: "Aukštos kokybės, išskirtinio dizaino maudymosi kostiumėliai jūsų atostogoms.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/laisvalaikio-ir-namu-drabuziai/maudymosi-kostiumeliai" }
+            ]
+        },
+        silta: {
+            kasdienai: [
+                { tag: "Sluoksniai", title: "Ploni megztiniai", desc: "Idealus pasirinkimas giedrai, bet permainingai dienai, kai norisi jaukumo.", url: "/pagrindinis-meniu/ploni-megztiniai" },
+                { tag: "Klasika", title: "Stilingi sijonai", desc: "Midi ar maxi sijonai, puikiai derantys su marškinėliais arba lengvu mezginiu.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/sijonai" }
+            ],
+            sventei: [
+                { tag: "Grakštumas", title: "Šilko ir medvilnės suknelės", desc: "Prabangios tekstūros suknelės su elegantišku kritimu, puikiai tinkančios vakarui.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/lietuviu-dizaineriu-sukneles" },
+                { tag: "Aksesuarai", title: "Šilko skarelės", desc: "Subtilus dizainerių kurtos skarelės akcentas ant kaklo arba rankinės.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/salikai-skareles/skareles" }
+            ],
+            darbui: [
+                { tag: "Profesionalu", title: "Klasikiniai kostiumėliai", desc: "Nepriekaištingo kirpimo švarko ir kelnių/sijono deriniai darbui.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/kostiumeliai/klasikiniai-kostiumeliai" },
+                { tag: "Struktūra", title: "Kokybiški švarkai", desc: "Lietuvos kūrėjų švarkai, suteikiantys charakterio bet kokiam baziniam deriniui.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/svarkai" }
+            ],
+            laisvalaikiui: [
+                { tag: "Laisvė", title: "Kelnės ir marškinėliai", desc: "Patogios laisvalaikio kelnės kartu su autorinio dizaino marškinėliais.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/kelnes/kelnes-2" },
+                { tag: "Praktiška", title: "Dizainerių kuprinės", desc: "Talpios ir stilingos odinės bei tekstilinės kuprinės visiems jūsų daiktams.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/rankines-2/lietuviu-dizaineriu-kuprines" }
+            ]
+        },
+        vejuota: {
+            kasdienai: [
+                { tag: "Jaukumas", title: "Išskirtiniai kardiganai", desc: "Ilgai vėsiai dienai – jaukūs, minkšti ir šilti kardiganai.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/megzti-drabuziai/kardiganai" },
+                { tag: "Būtina", title: "Autorinio dizaino rankinės", desc: "Papildykite savo rudeninį ar pavasarinį paltą išraiškinga rankine.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/rankines-2/rankines" }
+            ],
+            sventei: [
+                { tag: "Prabanga", title: "Kašmyro mezginiai", desc: "Ypatingai švelnus kašmyras, kuris šildo ir atrodo nepriekaištingai vakarienės metu.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/megzti-drabuziai/kasmyro-mezginiai" },
+                { tag: "Dovana Sau", title: "Nišiniai kvepalai", desc: "Sukurkite nematomą, bet gilų šventinį įspūdį su nišine parfumerija.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/nisiniai-kvepalai" }
+            ],
+            darbui: [
+                { tag: "Apsauga", title: "Stilingi lietpalčiai", desc: "Lietuvos dizainerių kurti lietpalčiai, saugantys nuo vėjo bei lietaus ir išlaikantys eleganciją.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/paltai-striukes-lietpalciai/lietpalciai" },
+                { tag: "Elegancija", title: "Marškiniai", desc: "Klasikiniai ir modernizuoti marškiniai, idealiai tinkantys po megztiniu ar švarku.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/palaidines/marskiniai" }
+            ],
+            laisvalaikiui: [
+                { tag: "Šiluma", title: "Paltai ir striukės", desc: "Kokybiški viršutiniai drabužiai žvarbesniems pasivaikščiojimams.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/paltai-striukes-lietpalciai/paltaistriukes" },
+                { tag: "Komfortas", title: "Džemperiai", desc: "Minkšti, stori medvilnės džemperiai laisvoms ir patogioms dienoms gamtoje.", url: "/pagrindinis-meniu/lietuvos-dizaineriu-drabuziai-ir-aksesuarai-moterims/megzti-drabuziai/dzemperiai-2" }
+            ]
+        }
+    };
+
+    // Nustatome šiandienos datą kaip numatytąją
+    const datePicker = document.getElementById('date-picker');
+    const today = new Date().toISOString().split('T')[0];
+    datePicker.value = today;
+
+    function processWeatherAndStyle() {
+        const selectedDate = new Date(datePicker.value);
+        const month = selectedDate.getMonth(); // 0 = sausis, 1 = vasaris...
+        
+        let temperature = 20; // Numatytoji vidutinė temp
+        let weatherKey = 'silta';
+        let statusText = '';
+
+        // Supaprastintas temperatūros prognozavimo algoritmas pagal mėnesius
+        if (month >= 5 && month <= 7) { // Vasaros mėnesiai (Birželis - Rugpjūtis)
+            temperature = 26;
+            weatherKey = 'karsta';
+            statusText = 'Prognozuojama giedra ir karšta vasaros diena.';
+        } else if (month === 4 || month === 8) { // Gegužė ir rugsėjis
+            temperature = 19;
+            weatherKey = 'silta';
+            statusText = 'Prognozuojami malonūs, vidutiniškai šilti orai.';
+        } else { // Vėsesnis sezonas
+            temperature = 12;
+            weatherKey = 'vejuota';
+            statusText = 'Prognozuojama vėsi, permaininga ar vėjuota diena.';
+        }
+
+        // Atvaizduojame temperatūrą
+        document.getElementById('temp-display').innerText = `${temperature}°C`;
+        document.getElementById('weather-desc-text').innerText = statusText;
+
+        // Gauname pasirinktą progą
+        const currentOccasion = document.getElementById('occasion-select').value;
+
+        // Atnaujiname prekių korteles
+        const container = document.getElementById('recommendations-container');
+        container.innerHTML = '';
+        
+        const items = db[weatherKey][currentOccasion] || [];
+        
+        items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'rec-card';
+            card.innerHTML = `
+                <div>
+                    <div class="rec-tag">${item.tag}</div>
+                    <h3 class="rec-title">${item.title}</h3>
+                    <p class="rec-desc">${item.desc}</p>
+                </div>
+                <a href="${baseUrl}${item.url}" target="_blank" class="shop-link">Atrasti asortimentą</a>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // Klausomės pakeitimų
+    datePicker.addEventListener('change', processWeatherAndStyle);
+    document.getElementById('occasion-select').addEventListener('change', processWeatherAndStyle);
+
+    // Paleidžiame pirmą kartą su šiandienos data
+    processWeatherAndStyle();
+</script>
+
+</body>
+</html>
