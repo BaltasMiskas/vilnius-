@@ -183,7 +183,7 @@
 <div class="container">
     <header>
         <h1>Orai &amp; Asortimentas</h1>
-        <p class="subtitle">Vilniaus orų prognozė ir Baltas Miškas stiliaus rekomendacijos</p>
+        <p class="subtitle">Vilniaus orų prognozė ir tikslinės dizainerių drabužių rekomendacijos</p>
     </header>
 
     <div class="input-group">
@@ -193,7 +193,7 @@
 
     <button onclick="checkWeatherAndRecommend()">Ieškoti derinio</button>
 
-    <div id="loader" class="loader">Tikrinami orai Vilniuje...</div>
+    <div id="loader" class="loader">Analizuojami orų duomenys...</div>
 
     <div id="result" class="result-box">
         <div class="weather-info">
@@ -202,10 +202,10 @@
         </div>
 
         <div class="recommendation-card">
-            <span id="rec-category" class="category-tag">Rekomendacija</span>
-            <h3 id="rec-title" class="item-title">Drabužio pavadinimas</h3>
-            <p id="rec-desc" class="item-description">Aprašymas, kodėl šis pasirinkimas geriausiai tinka šiam orui.</p>
-            <a id="rec-link" href="#" target="_blank" class="shop-link">Peržiūrėti kolekciją baltasmiskas.lt</a>
+            <span id="rec-category" class="category-tag">Kolekcija</span>
+            <h3 id="rec-title" class="item-title">Drabužis</h3>
+            <p id="rec-desc" class="item-description">Aprašymas</p>
+            <a id="rec-link" href="#" target="_blank" class="shop-link">Peržiūrėti baltasmiskas.lt</a>
         </div>
     </div>
 </div>
@@ -221,49 +221,93 @@
         6: 21,  7: 20,  8: 14,  9: 8,   10: 3,  11: -1
     };
 
-    // Finer temperature gaps to force diverse results across fewer degrees
-    const assortmentMatrix = [
-        {
-            minTemp: 23,
-            maxTemp: 100,
-            category: "Lino Dienoraščiai",
-            title: "Balinto Lino Suknelė arba Marškiniai",
-            desc: "Tikram vasaros karščiui Vilniaus senamiestyje nieko nėra geriau už natūralų, vėsinantį liną iš Baltas Miškas asortimento.",
-            url: "https://www.baltasmiskas.lt/sukneles"
+    // Granular Assortment Matrix: Split by fine temp gaps and Even/Odd days
+    const microAssortment = {
+        hot: { // > 22°C
+            even: {
+                category: "Lino kolekcija",
+                title: "Laisvo kirpimo lino suknelė",
+                desc: "Karštai dienai mieste – lengva, neįpareigojanti lino suknelė. Natūralus audinys leidžia odai kvėpuoti ir palaiko gaivą.",
+                url: "https://www.baltasmiskas.lt/sukneles"
+            },
+            odd: {
+                category: "Lino Dienoraščiai",
+                title: "Premium lino marškiniai ir šortai",
+                desc: "Stilingas vasaros minimalizmas. Vėsus, kokybiškas linas puikiai tinka tiek poilsiui, tiek susitikimams mieste.",
+                url: "https://www.baltasmiskas.lt/marskiniai-bliuzones"
+            }
         },
-        {
-            minTemp: 18,
-            maxTemp: 23,
-            category: "Vasaros Elegancija",
-            title: "Lengvas Sijonas arba Plona Šilko Suknelė",
-            desc: "Puikus, šiltas oras mieste. Rinkitės laisvai krentančius audinius, lengvus sijonus bei trumpas rankoves.",
-            url: "https://www.baltasmiskas.lt/sijonai"
+        warm: { // 18°C iki 22°C
+            even: {
+                category: "Vasaros kostiumai",
+                title: "Lengvas medvilninis švarkas arba suknelė",
+                desc: "Subalansuotas pasirinkimas idealiam vasaros orui, kai norisi elegantiško silueto, bet išlaikant visišką komfortą.",
+                url: "https://www.baltasmiskas.lt/svarkai"
+            },
+            odd: {
+                category: "Laisvalaikio stilius",
+                title: "Plazdantis vidutinio ilgio sijonas",
+                desc: "Puikiai tinka šiltiems pasivaikščiojimams Vilniaus gatvėmis. Lengvai derinamas su minimalistiniais marškinėliais.",
+                url: "https://www.baltasmiskas.lt/sijonai"
+            }
         },
-        {
-            minTemp: 12,
-            maxTemp: 18,
-            category: "Švarkai & Kapsulė",
-            title: "Struktūrizuotas Švarkas ar Pereinamojo Sezono Kostiumėlis",
-            desc: "Lanksčiam pavasario ar rudens orui idealiai tinka struktūrizuoti lietuvių dizainerių švarkai, lengvai priderinami prie sluoksniuojamo stiliaus.",
-            url: "https://www.baltasmiskas.lt/svarkai"
+        mild: { // 14°C iki 18°C
+            even: {
+                category: "Kapsulinė spinta",
+                title: "Struktūrizuotas Oversized švarkas",
+                desc: "Puikus lietuvių dizainerių kirpimas pereinamajam sezonui. Suteikia įvaizdžiui griežtumo ir apsaugo nuo gaivaus vėjo.",
+                url: "https://www.baltasmiskas.lt/svarkai"
+            },
+            odd: {
+                category: "Miesto klasika",
+                title: "Lengvas medvilninis džemperis ar kardiganas",
+                desc: "Minkštas sluoksniavimo elementas, idealiai tinkantis vėsesniam vasaros vakarui ar ramiam pavasario vidurdieniui.",
+                url: "https://www.baltasmiskas.lt/megzti-kostiumeliai"
+            }
         },
-        {
-            minTemp: 4,
-            maxTemp: 12,
-            category: "Megzti Kostiumėliai",
-            title: "Jaukus Merino Vilnos Megztinis",
-            desc: "Vėsiam orui subalansuota kokybė. Plona, bet šilta merino vilna neleidžia sušalti ir atrodo nepriekaištingai.",
-            url: "https://www.baltasmiskas.lt/megzti-kostiumeliai"
+        cool: { // 9°C iki 14°C
+            even: {
+                category: "Megzti kostiumėliai",
+                title: "Plonos merino vilnos megztinis",
+                desc: "Plonas, tačiau itin šiltas natūralaus pluošto mezginys, idealiai subalansuotas permainingiems pavasario orams.",
+                url: "https://www.baltasmiskas.lt/megzti-kostiumeliai"
+            },
+            odd: {
+                category: "Rudens/Pavasario akcentai",
+                title: "Storo audinio marškinių tipo striukė",
+                desc: "Universalus viršutinis drabužis, sukuriantis modernų miesto įvaizdį ir suteikiantis reikiamo jaukumo.",
+                url: "https://www.baltasmiskas.lt/marskiniai-bliuzones"
+            }
         },
-        {
-            minTemp: -100,
-            maxTemp: 4,
-            category: "Žiemos Jaukumas",
-            title: "Šilti Vilnos Mezginiai & Aksesuarai",
-            desc: "Spaudžiant šaltukui ar žvarbiam vėjui, rinkitės storo mezgimo vilnos gaminius, jaukius šalikus bei pirštines.",
-            url: "https://www.baltasmiskas.lt/priedai-aksesuarai"
+        chilly: { // 4°C iki 9°C
+            even: {
+                category: "Merino Vilna",
+                title: "Merino vilnos kelnių ir megztinio kostiumas",
+                desc: "Visiškas jaukumo ir elegancijos balansas vėsioms dienoms. Natūrali vilna saugo šilumą ir nevaržo judesių.",
+                url: "https://www.baltasmiskas.lt/megzti-kostiumeliai"
+            },
+            odd: {
+                category: "Aksesuarai",
+                title: "Platus vilnos šalikas ir stilinga kepurė",
+                desc: "Kai aprangai trūksta paskutinio šilto akcento – rinkitės išskirtinės kokybės lietuvių kūrėjų šalikus.",
+                url: "https://www.baltasmiskas.lt/priedai-aksesuarai"
+            }
+        },
+        cold: { // < 4°C
+            even: {
+                category: "Žiemos jaukumas",
+                title: "Storas, stambaus mezgimo vilnos megztinis",
+                desc: "Maksimali apsauga nuo šalto Vilniaus vėjo. Stambus, kokybiškas mezgimas garantuoja nepriekaištingą šilumą.",
+                url: "https://www.baltasmiskas.lt/megzti-kostiumeliai"
+            },
+            odd: {
+                category: "Šilti aksesuarai",
+                title: "Minkštos vilnos pirštinės ir kepurių rinkinys",
+                desc: "Šaltuoju sezonu nepakeičiami aksesuarai iš natūralių audinių, saugantys nuo žvarbaus lietuviško oro.",
+                url: "https://www.baltasmiskas.lt/priedai-aksesuarai"
+            }
         }
-    ];
+    };
 
     async function checkWeatherAndRecommend() {
         const dateInput = document.getElementById('date-input').value;
@@ -277,6 +321,10 @@
 
         const diffTime = targetDate - today;
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        // Determine if selected day is even or odd to alternate items
+        const isEvenDay = targetDate.getDate() % 2 === 0;
+        const dayType = isEvenDay ? 'even' : 'odd';
 
         document.getElementById('loader').style.display = 'block';
         document.getElementById('result').style.display = 'none';
@@ -284,7 +332,6 @@
         let temperature;
         let isForecast = false;
 
-        // Fetch live 7-day forecast if within range
         if (diffDays >= 0 && diffDays <= 6) {
             try {
                 const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=temperature_2m_max&timezone=auto`);
@@ -294,26 +341,24 @@
                     isForecast = true;
                 }
             } catch (error) {
-                console.error("API klaida, naudojami istoriniai algoritmai", error);
+                console.error("API Error", error);
             }
         }
 
-        // DYNAMIC VARIATION ENGINE: If out of forecast range, calculate temperature with a 
-        // mathematical wave based on the chosen day so that different dates yield completely different results.
         if (temperature === undefined) {
             const month = targetDate.getMonth();
             const dayIdx = targetDate.getDate();
             const baseTemp = vilniusClimate[month];
             
-            // Mathematical sine wave to fluctuate temperature naturally by +/- 5 degrees depending on the calendar day
-            const fluctuation = Math.sin(dayIdx) * 5; 
+            // Higher amplitude fluctuation (+/- 7 degrees) to guarantee bracket changes across days
+            const fluctuation = Math.sin(dayIdx * 1.5) * 7; 
             temperature = Math.round(baseTemp + fluctuation);
         }
 
-        displayResults(temperature, isForecast, targetDate);
+        displayResults(temperature, isForecast, targetDate, dayType);
     }
 
-    function displayResults(temp, isForecast, dateObj) {
+    function displayResults(temp, isForecast, dateObj, dayType) {
         document.getElementById('loader').style.display = 'none';
         document.getElementById('result').style.display = 'block';
 
@@ -324,7 +369,15 @@
             ? `Tiesioginė orų prognozė Vilniuje (${dateString})`
             : `Istorinis orų modelis Vilniuje (${dateString})`;
 
-        const match = assortmentMatrix.find(item => temp >= item.minTemp && temp < item.maxTemp);
+        // Map highly accurate micro-brackets
+        let weatherBracket = 'cold';
+        if (temp > 22) weatherBracket = 'hot';
+        else if (temp > 18) weatherBracket = 'warm';
+        else if (temp > 14) weatherBracket = 'mild';
+        else if (temp > 9) weatherBracket = 'cool';
+        else if (temp > 4) weatherBracket = 'chilly';
+
+        const match = microAssortment[weatherBracket][dayType];
 
         if (match) {
             document.getElementById('rec-category').innerText = match.category;
