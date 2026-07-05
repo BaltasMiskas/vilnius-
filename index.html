@@ -26,7 +26,7 @@
             max-width: 800px;
             margin: 0 auto;
             background: #ffffff;
-            padding: 40px 0; /* Švarus minimalistinis stilius be papildomų rėmų */
+            padding: 40px 0; /* Minimalistinis stilius be papildomų rėmų */
         }
 
         h2 {
@@ -234,7 +234,7 @@
         </div>
     </div>
 
-    <!-- STRATEGINIS VEIKSMO MYGTUKAS -->
+    <!-- VEIKSMO MYGTUKAS -->
     <div class="submit-btn-container">
         <button type="button" class="submit-btn" id="filter-submit-btn">Atrinkti derinius</button>
     </div>
@@ -318,34 +318,39 @@
         }
     };
 
-    // Nustatome šiandienos datą kaip pradinę reikšmę
+    // Nustatome šiandienos datą kaip numatytąją įvedimo lauke
     const datePicker = document.getElementById('date-picker');
     const today = new Date().toISOString().split('T')[0];
     datePicker.value = today;
 
     function generateStyles() {
-        const selectedDate = new Date(datePicker.value);
-        const month = selectedDate.getMonth();
-        
-        let temperature = 20;
-        let weatherKey = 'silta';
-        let statusText = '';
+        const dateString = datePicker.value;
+        if (!dateString) return;
 
-        if (month >= 5 && month <= 7) { 
-            temperature = 26;
+        // GRĄŽINTAS ANKSTESNIS PRECIZINIS MECHANIZMAS
+        // Sukuriame stabilų orų kintamumą pagal pasirinktos dienos timestamp numerius
+        const selectedDate = new Date(dateString);
+        const dayOfYear = Math.floor((selectedDate - new Date(selectedDate.getFullYear(), 0, 0)) / 86400000);
+        
+        // Sezoninė bazinė temperatūra (sinuso banga per metus)
+        const baseTemp = 14 + 12 * Math.sin((dayOfYear - 105) * 2 * Math.PI / 365);
+        // Pridedame nedidelį kasdienį atsitiktinį svyravimą (-3°C iki +3°C), kad gretimos dienos skirtųsi
+        const daySeed = Math.sin(dayOfYear * 55.5) * 3; 
+        const temperature = Math.round(baseTemp + daySeed);
+
+        // Nustatome orų kategoriją pagal apskaičiuotą temperatūrą
+        let weatherKey = 'silta';
+        let statusText = 'Prognozuojami malonūs, vidutiniškai šilti orai.';
+
+        if (temperature > 22) {
             weatherKey = 'karsta';
             statusText = 'Prognozuojama giedra ir karšta vasaros diena.';
-        } else if (month === 4 || month === 8) { 
-            temperature = 19;
-            weatherKey = 'silta';
-            statusText = 'Prognozuojami malonūs, vidutiniškai šilti orai.';
-        } else { 
-            temperature = 12;
+        } else if (temperature < 15) {
             weatherKey = 'vejuota';
             statusText = 'Prognozuojama vėsi, permaininga ar vėjuota diena.';
         }
 
-        // Užpildome duomenis
+        // Atvaizduojame rezultatus vartotojui
         document.getElementById('temp-display').innerText = `${temperature}°C`;
         document.getElementById('weather-desc-text').innerText = statusText;
 
@@ -369,11 +374,11 @@
             container.appendChild(card);
         });
 
-        // Parodome rezultatų zoną
+        // Parodome rezultatų bloką tik dabar
         document.getElementById('results-area').style.display = 'block';
     }
 
-    // Rezultatai generuojami TIK paspaudus mygtuką
+    // Viskas suveikia tik spustelėjus mygtuką
     document.getElementById('filter-submit-btn').addEventListener('click', generateStyles);
 </script>
 
