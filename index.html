@@ -221,9 +221,8 @@
         6: 21,  7: 20,  8: 14,  9: 8,   10: 3,  11: -1
     };
 
-    // Granular Assortment Matrix: Split by fine temp gaps and Even/Odd days
     const microAssortment = {
-        hot: { // > 22°C
+        hot: { 
             even: {
                 category: "Lino kolekcija",
                 title: "Laisvo kirpimo lino suknelė",
@@ -237,7 +236,7 @@
                 url: "https://www.baltasmiskas.lt/marskiniai-bliuzones"
             }
         },
-        warm: { // 18°C iki 22°C
+        warm: { 
             even: {
                 category: "Vasaros kostiumai",
                 title: "Lengvas medvilninis švarkas arba suknelė",
@@ -251,7 +250,7 @@
                 url: "https://www.baltasmiskas.lt/sijonai"
             }
         },
-        mild: { // 14°C iki 18°C
+        mild: { 
             even: {
                 category: "Kapsulinė spinta",
                 title: "Struktūrizuotas Oversized švarkas",
@@ -265,11 +264,11 @@
                 url: "https://www.baltasmiskas.lt/megzti-kostiumeliai"
             }
         },
-        cool: { // 9°C iki 14°C
+        cool: { 
             even: {
                 category: "Megzti kostiumėliai",
                 title: "Plonos merino vilnos megztinis",
-                desc: "Plonas, tačiau itin šiltas natūralaus pluošto mezginys, idealiai subalansuotas permainingiems pavasario orams.",
+                desc: "Plonas, tačiau itin šiltas natūraluas pluošto mezginys, idealiai subalansuotas permainingiems pavasario orams.",
                 url: "https://www.baltasmiskas.lt/megzti-kostiumeliai"
             },
             odd: {
@@ -279,7 +278,7 @@
                 url: "https://www.baltasmiskas.lt/marskiniai-bliuzones"
             }
         },
-        chilly: { // 4°C iki 9°C
+        chilly: { 
             even: {
                 category: "Merino Vilna",
                 title: "Merino vilnos kelnių ir megztinio kostiumas",
@@ -293,7 +292,7 @@
                 url: "https://www.baltasmiskas.lt/priedai-aksesuarai"
             }
         },
-        cold: { // < 4°C
+        cold: { 
             even: {
                 category: "Žiemos jaukumas",
                 title: "Storas, stambaus mezgimo vilnos megztinis",
@@ -322,7 +321,6 @@
         const diffTime = targetDate - today;
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         
-        // Determine if selected day is even or odd to alternate items
         const isEvenDay = targetDate.getDate() % 2 === 0;
         const dayType = isEvenDay ? 'even' : 'odd';
 
@@ -332,25 +330,26 @@
         let temperature;
         let isForecast = false;
 
-        if (diffDays >= 0 && diffDays <= 6) {
+        // Expanded window to 16 days via the Open-Meteo extended parameters
+        if (diffDays >= 0 && diffDays <= 15) {
             try {
-                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=temperature_2m_max&timezone=auto`);
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=temperature_2m_max&forecast_days=16&timezone=auto`);
                 const data = await response.json();
-                if(data && data.daily && data.daily.temperature_2m_max) {
+                if(data && data.daily && data.daily.temperature_2m_max && data.daily.temperature_2m_max[diffDays] !== null) {
                     temperature = Math.round(data.daily.temperature_2m_max[diffDays]);
                     isForecast = true;
                 }
             } catch (error) {
-                console.error("API Error", error);
+                console.error("API error, switching to simulation baseline", error);
             }
         }
 
+        // Ultimate Fallback: For historical dates or deep future dates
         if (temperature === undefined) {
             const month = targetDate.getMonth();
             const dayIdx = targetDate.getDate();
             const baseTemp = vilniusClimate[month];
             
-            // Higher amplitude fluctuation (+/- 7 degrees) to guarantee bracket changes across days
             const fluctuation = Math.sin(dayIdx * 1.5) * 7; 
             temperature = Math.round(baseTemp + fluctuation);
         }
@@ -366,10 +365,9 @@
         
         const dateString = dateObj.toLocaleDateString('lt-LT', { year: 'numeric', month: 'long', day: 'numeric' });
         document.getElementById('weather-desc').innerText = isForecast 
-            ? `Tiesioginė orų prognozė Vilniuje (${dateString})`
-            : `Istorinis orų modelis Vilniuje (${dateString})`;
+            ? `Tikra 16 dienų orų prognozė Vilniuje (${dateString})`
+            : `Klimato modelio simuliacija Vilniuje (${dateString})`;
 
-        // Map highly accurate micro-brackets
         let weatherBracket = 'cold';
         if (temp > 22) weatherBracket = 'hot';
         else if (temp > 18) weatherBracket = 'warm';
